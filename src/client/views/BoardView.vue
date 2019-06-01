@@ -13,7 +13,7 @@
     import Cell from '../components/Cell.vue'
     import TileView from '../components/TileView.vue'
     import GameEndOverlay from '../components/GameEndOverlay.vue'
-    import {Board} from '../board'
+    import Board from '../board'
     export default {
         data(){
           return {
