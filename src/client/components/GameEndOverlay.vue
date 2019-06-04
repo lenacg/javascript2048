@@ -40,6 +40,7 @@
 
         methods:{
             restart(){
+				this.$emit("toupload","upload");
                 this.onrestart && this.onrestart()
             }
         },

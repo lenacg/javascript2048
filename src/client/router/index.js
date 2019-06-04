@@ -19,7 +19,14 @@ var router = new Router({
           title: 'game'
       },
       component: (resolve) => require(['../views/BoardView.vue'], resolve)
-    }
+    },
+		{
+		  path: '/',
+		  meta: {
+		      title: 'login'
+		  },
+		  component: (resolve) => require(['../views/Login.vue'], resolve)
+		}
   ]
 })
 

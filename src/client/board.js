@@ -1,4 +1,5 @@
 import Tile from './tile'
+import Player from './player'
 
 var rotateLeft = function (matrix) {
     var rows = matrix.length;
@@ -16,6 +17,7 @@ var rotateLeft = function (matrix) {
 
 class Board{
     constructor(){
+		this.players = {};
         this.tiles = [];
         this.cells = [];
         this.size = 4;
@@ -51,6 +53,7 @@ class Board{
                     var tile2 = currentRow.shift();
                     tile2.mergedInto = targetTile;
                     targetTile.value += tile2.value;
+					this.players.point += targetTile.value;
                 }
                 resultRow[target] = targetTile;
                 this.won |= (targetTile.value == 2048);
@@ -131,7 +134,6 @@ class Board{
         }
         return !canMove;
     }
-
 
 }
 
