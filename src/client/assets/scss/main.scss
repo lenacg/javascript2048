@@ -3,6 +3,42 @@
   src: url('../clear-sans.ttf') format('truetype');
 }
 
+.head{
+	width: 200px;
+	height: 100px;
+	margin: 10px;
+	line-height: 90px;
+	display: inline-block;
+	font-size: 30px;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+	border-radius: 7px;
+	font-family: "Clear Sans";
+	color: #766;
+	background-color: #dcb;
+}
+
+// .current .best{
+// 	width: 225px;
+// 	display: inline-block;
+// 	user-select: none;
+// 	height: 100px;
+// 	margin: 5px;
+// 	line-height: 90px;
+// 	display: inline-block;
+// 	font-size: 55px;
+// 	font-weight: bold;
+// 	text-align: center;
+// 	vertical-align: middle;
+// 	border-radius: 7px;
+// 	font-family: "Clear Sans";
+// 	color: #766;
+// 	background-color: #dcb;
+// }
+
+
+
 .content {
 //   display: flex;
 //   flex-direction: row;

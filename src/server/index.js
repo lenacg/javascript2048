@@ -23,12 +23,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 // 引入history模式让浏览器进行前端路由页面跳转
 app.use(history())
-// connection.connect();
-// connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-//   if (error) throw error;
-//   console.log('The solution is: ', results[0].solution);
-// });
-// uncomment after placing your favicon in /public
+
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 app.use(logger('dev'))
 app.use(bodyParser.json())
@@ -100,6 +95,20 @@ app.post('/checklogin', urlencodedParser, function (req, res){
 			res.end(JSON.stringify(response));
 		}
 	});
+})
+
+app.get('/getAllRank',function(req,res){
+	var sql='SELECT point,p.name FROM record r LEFT JOIN player p ON r.player_id=p.player_id WHERE point>= \
+			(SELECT MAX(d.point) FROM record d WHERE d.player_id = r.player_id)';
+	connection.query(sql,function(err,result){
+		if(err){
+		  console.log('[SELECT ERROR] - ',err.message);
+		  return;
+		}
+		console.log(result);
+		res.end(JSON.stringify(result));
+	});
+
 })
 
 app.post('/reg',urlencodedParser,function(req,res){

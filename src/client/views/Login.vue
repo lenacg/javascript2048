@@ -114,7 +114,7 @@
 					if(data.code === 0){
 						this.$router.push({path:'/game'})
 						this.$Notice.open({
-							title: '欢迎'+this.formCustom.user,
+							title: '欢迎 '+this.formCustom.user,
 							desc: ''
 						});
 					}else if(data.code === 1){
