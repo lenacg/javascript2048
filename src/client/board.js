@@ -17,7 +17,8 @@ var rotateLeft = function (matrix) {
 
 class Board{
     constructor(){
-		this.players = {};
+		//this.sockets={};
+		this.players = new Player();
         this.tiles = [];
         this.cells = [];
         this.size = 4;
@@ -32,6 +33,16 @@ class Board{
         this.deltaY = [0, -1, 0, 1];
     }
 
+	addPlayer(socket,name){
+		this.sockets[socket.id] = socket;
+		this.players[socket.id] = new Player(socket.id, username);
+	}
+	
+	removePlayer(socket) {
+		delete this.sockets[socket.id];
+		delete this.players[socket.id];
+	}
+	
     addTile(){
         var res = new Tile;
         Tile.apply(res, arguments);
@@ -53,7 +64,7 @@ class Board{
                     var tile2 = currentRow.shift();
                     tile2.mergedInto = targetTile;
                     targetTile.value += tile2.value;
-					this.players.point += targetTile.value;
+					this.players.addPoint(targetTile.value);
                 }
                 resultRow[target] = targetTile;
                 this.won |= (targetTile.value == 2048);

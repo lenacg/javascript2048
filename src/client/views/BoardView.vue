@@ -1,33 +1,77 @@
 <template>
 	
     <div class="content">
-		<div class="gamebody" style="text-align: center;">
-			<span class="head">
-				{{player.point}}
-			</span>
-			<span class="head">
-				Best
-				{{pointList[0].point}}	
-			</span>
-			
-			<div class="gcontent" style="text-align: center;">
-				<div class="board"  tabIndex="1" style="margin:0 auto">
-					<div v-for="(r_item,r_index) in board.cells" :key="'1'+r_index">
-						<cell v-for="(c_item,c_index) in r_item" :key="c_index"></cell>
-					</div>
-					<tile-view v-for="(tile,index) in tiles" :tile="tile" :key="'2'+index">
-					</tile-view>
-					<game-end-overlay v-on:toupload="upPoint" :board="board" :onrestart="onRestart"></game-end-overlay>
-				</div>
-			</div>
-		</div>
+		<Row type="flex" justify="center" id="board" >
+			<Col span="6" >
+				<Card style="width: 80%;margin:0 auto;">
+					<p slot="title">
+						<Icon type="md-contact" />
+						{{board.players.name}}
+					</p>
+					<a v-show="isLogin" href="http://localhost:4000/" slot="extra" @click="logout()">
+						<Icon type="ios-loop-strong"></Icon>
+						Logout
+					</a>
+					<ul style="list-style-type:none">
+						<li v-for="item in pointList">
+							<span class="mypoint">{{item.point}}</span>
+						</li>
+					</ul>
+				</Card>
+			</Col>
+			<Col span="12">
+				<div class="gamebody" style="text-align: center;">
+					<Row>
+						<Col span="12">
+							<span class="head-left">
+								{{board.players.point}}
+							</span>
+						</Col>
+						<Col span="12">
+							<span class="head-right">
+								Best
+								{{myBest}}	
+							</span>	
+						</Col>
+					</Row>
 
-		<Tabs value="name1">
-			<TabPane label="个人排行" name="name1">
+					<div class="gcontent" style="text-align: center;">
+						<div class="board"  tabIndex="1" style="margin:0 auto">
+							<div v-for="(r_item,r_index) in board.cells" :key="'1'+r_index">
+								<cell v-for="(c_item,c_index) in r_item" :key="c_index"></cell>
+							</div>
+							<tile-view v-for="(tile,index) in tiles" :tile="tile" :key="'2'+index">
+							</tile-view>
+							<game-end-overlay v-on:toupload="upPoint" :board="board" :onrestart="onRestart"></game-end-overlay>
+						</div>
+					</div>
+					
+					<span class="head-bottom" @click="onRestart()">
+						Restart
+					</span>
+					
+				</div>
+			</Col>
+			<Col span="6">
+				<Card style="width: 80%;margin:0 auto;">
+					<p slot="title">
+						总排行
+					</p>
+					<ul style="list-style-type:none">
+						<li v-for="item in allRank>50?allRank.slice(0,50):allRank">
+							<span class="mypoint">{{item.name}}</span>
+							<span class="mypoint" style="float: right;">{{item.point}}</span>
+						</li>
+					</ul>
+				</Card>
+			</Col>
+		</Row>
+		<Tabs value="name3">
+			<!-- <TabPane label="个人排行" name="name1">
 				<Card style="width: 270px;margin-left: 10px;">
 					<p slot="title">
 						<Icon type="md-contact" />
-						{{player.name}}
+						{{board.players.name}}
 					</p>
 					<a v-show="isLogin" href="http://localhost:4000/" slot="extra" @click="logout()">
 						<Icon type="ios-loop-strong"></Icon>
@@ -42,7 +86,7 @@
 				
 			</TabPane>
 			<TabPane label="总排行" name="name2">
-				<Card style="width: 270px;;margin-left: 10px;">
+				<Card style="width: 270px;margin-left: 10px;">
 					<p slot="title">
 						总排行
 					</p>
@@ -53,8 +97,27 @@
 						</li>
 					</ul>
 				</Card>
+			</TabPane> -->
+			<TabPane label="当前玩家" name="name3">
+				<Row style="background:#eee;padding: 20px;border-radius: 20px;">
+					<Col span="8">
+						<div v-for="(value,key) in playerList" style="font-size: 20px;">{{key}}:{{value}}</div>
+					</Col>
+					<Col span="16">
+						<Card style="width: 80%;margin-left: 0px;">
+							<ul style="list-style-type:none">
+								<li v-for="item in msgList">
+									<span class="msgPart">{{item.time}} {{item.name}}: {{item.msg}}</span>
+								</li>
+							</ul>
+						</Card>
+						<Input placeholder="开始聊天吧..." v-model="text" id="msg" style="width: 80%"> 
+							<Button slot="append" @click="sendMsg(text)" icon="md-arrow-round-back"></Button>
+						</Input>
+					</Col>
+				</Row>
+				
 			</TabPane>
-			<TabPane label="标签三" name="name3">标签三的内容</TabPane>
 		</Tabs>
 
     </div>
@@ -69,23 +132,77 @@
     export default {
         data(){
           return {
+			  msgList:[],
+			  text:"",
+			  playerList:{},
 			  isLogin:true,
 			  pointList:[],
+			  myBest:0,
 			  allRank:[],
-			  player:{
-				  name:'',
-				  point:0
-			  },
               board:new Board()
           }
         },
         mounted(){
+			this.$socket.removeAllListeners();
+			var game = document.getElementById('board');
+			window.addEventListener('keydown',this.enterToSend.bind(this))
+			var startX;
+			var startY;
+			var endX;
+			var endY;
+			var direction;
+			game.addEventListener('touchstart',function(event){
+				event.preventDefault();
+				startX = event.changedTouches[0].pageX;
+				startY = event.changedTouches[0].pageY;
+// 				startX = event.pageX;
+// 				startY = event.pageY;
+
+			}.bind(this),false)
+
+			game.addEventListener("touchend",function(event){
+				event.preventDefault();
+				endX = event.changedTouches[0].pageX;
+				endY = event.changedTouches[0].pageY;
+				if((endY-startY)>60&&Math.abs((endY-startY)/(endX-startX))>1){
+					//down
+					direction=3;
+				}
+				else if(endY-startY<-60&&Math.abs((endY-startY)/(endX-startX))>1){
+					//up
+					direction=1;
+				}
+				else if((endX-startX)>60&&Math.abs((endY-startY)/(endX-startX))<1){
+					//right
+					direction=2;
+				}
+				else if((endX-startX)<-60&&Math.abs((endY-startY)/(endX-startX))<1){
+					//left
+					direction=0;
+				}else{
+					direction=-1;
+				}
+				
+				if(direction!==-1){
+					this.board.move(direction)
+					if(this.isLogin){
+						this.$socket.emit('curPoint',{name:this.board.players.name,point:this.board.players.point});
+					}
+				}
+			}.bind(this),false)
+			
             window.addEventListener('keydown', this.handleKeyDown.bind(this));
 			this.getName();
-			this.getAllRank();
+			if(this.isLogin){
+				this.getAllRank();
+			}
+			this.sendMsg("");
+			
         },
         beforeDestroy(){
+			//clearInterval(this.timer);
             window.removeEventListener('keydown', this.handleKeyDown.bind(this));
+			window.removeEventListener('keydown', this.enterToSend.bind(this));
         },
         computed:{
           tiles(){
@@ -94,6 +211,38 @@
           }
         },
         methods:{
+			enterToSend(event){
+				if(event.keyCode === 13&&this.text.trim().length!==0){
+					this.sendMsg(this.text);
+				}
+			},
+			sendMsg(text){
+				//this.$socket.removeAllListeners();
+				this.$socket.emit('sendMsg',{name:this.board.players.name,msg:text});
+// 				this.$socket.on('showMsg',function(data){
+// 					if(data.message.msg!==''){
+// 						console.log("msg:"+JSON.stringify(data)+"---------------------");
+// 						var message = data.message;
+// 						var date = new Date();
+// 						var strDate = this.formatDate(date);
+// 						message.time = strDate;
+// 						this.msgList.push(message);
+// 						console.log(this.msgList);
+// 					}
+// 				}.bind(this))
+				
+				this.text = '';
+			},
+			formatDate(date){
+				var month = date.getMonth()+1;
+				month = month<10?'0'+month : month;
+				var day = date.getDate()<10?'0'+date.getDate():date.getDate();
+				var hour = date.getHours()<10?'0'+date.getHours():date.getHours();
+				var min = date.getMinutes()<10?'0'+date.getMinutes():date.getMinutes();
+				var sec = date.getSeconds()<10?'0'+date.getSeconds():date.getSeconds();
+				var strDate = hour+':'+min+':'+sec;
+				return strDate;
+			},
             handleKeyDown(event){
                 if (this.board.hasWon()) {
                     return;
@@ -102,23 +251,57 @@
                     event.preventDefault();
                     var direction = event.keyCode - 37;
                     this.board.move(direction)
+					if(this.isLogin){
+						this.$socket.emit('curPoint',{name:this.board.players.name,point:this.board.players.point});
+					}
+					
                 }
             },
             onRestart(){
                 this.board = new Board()
+				this.getName();
             },
 			getName(){
 				this.$axios.get('/getName').then((response)=>{
 					var data = response.data;
 					if(data.name === ''){
 						this.isLogin = false;
-						this.player.name = '点击登录'
+						this.board.players.name = '点击登录'
 						return;
 					}
-					this.player.name = data.name;
-					this.getPointList(this.player.name);
-					this.board.players = this.player
+					this.board.players.name = data.name;
+					this.$socket.emit('login',data.name);
+					this.$socket.removeAllListeners();
+					this.$socket.on('current',function(data){
+						console.log("data:"+JSON.stringify(data)+"---------------------");
+						this.getPlayerList(data);
+					}.bind(this))
+					this.$socket.on('out',function(data){
+						console.log("data:"+JSON.stringify(data)+"---------------------");
+						this.getPlayerList(data);
+					}.bind(this))
+					if(this.isLogin){
+						this.$socket.emit('curPoint',{name:this.board.players.name,point:this.board.players.point});
+					}
+					this.getPointList(this.board.players.name);
+					
+					this.$socket.on('showMsg',function(data){
+						if(data.message.msg!==''){
+							console.log("msg:"+JSON.stringify(data)+"---------------------");
+							var message = data.message;
+							var date = new Date();
+							var strDate = this.formatDate(date);
+							message.time = strDate;
+							this.msgList.push(message);
+							console.log(this.msgList);
+						}
+					}.bind(this))
+					//this.sendMsg("上线了");
 				})
+			},
+			getPlayerList(data){
+				this.playerList = data.players;
+				//console.log("get:"+this.board.playersList);
 			},
 			logout(){
 				this.$axios.get('/logout').then((response)=>{
@@ -138,10 +321,11 @@
 				this.$axios.post('/getPointList',{name:name}).then((response)=>{
 					var data = response.data;
 					this.pointList = data;
+					this.myBest = data[0].point;
 				})
 			},
 			upPoint(){
-				if(this.player.name === '点击登录')
+				if(!this.isLogin)
 					return;
 				this.$axios.post('/upPoint',{name:this.board.players.name,point:this.board.players.point}).then((response)=>{
 					var data = response.data;
@@ -150,7 +334,13 @@
 					this.pointList.sort(function(a,b){
 						return b.point-a.point;
 					})
-					this.player.point = 0;
+					
+					this.board.players.point = 0;
+					this.myBest = this.pointList[0].point;
+					this.getAllRank();
+					//this.$socket.removeAllListeners();
+					this.$socket.emit('curPoint',{name:this.board.players.name,point:this.board.players.point});
+					// this.board.players = this.board.players
 				})
 			}
         },

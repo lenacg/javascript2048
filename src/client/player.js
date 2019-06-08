@@ -1,7 +1,8 @@
 class Player{
-	constructor(name){
-		this.name = name;
+	constructor(){
+		this.name = '';
 		this.point = 0;
+		//this.id = id;
 	}
 	
 	addPoint(value){

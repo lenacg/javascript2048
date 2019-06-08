@@ -3,11 +3,11 @@
   src: url('../clear-sans.ttf') format('truetype');
 }
 
-.head{
-	width: 200px;
-	height: 100px;
-	margin: 10px;
-	line-height: 90px;
+.head-left, .head-right ,.head-bottom{
+	
+	height: 70px;
+	margin: 5px;
+	line-height: 70px;
 	display: inline-block;
 	font-size: 30px;
 	font-weight: bold;
@@ -19,23 +19,32 @@
 	background-color: #dcb;
 }
 
-// .current .best{
-// 	width: 225px;
-// 	display: inline-block;
-// 	user-select: none;
-// 	height: 100px;
-// 	margin: 5px;
-// 	line-height: 90px;
-// 	display: inline-block;
-// 	font-size: 55px;
-// 	font-weight: bold;
-// 	text-align: center;
-// 	vertical-align: middle;
-// 	border-radius: 7px;
-// 	font-family: "Clear Sans";
-// 	color: #766;
-// 	background-color: #dcb;
-// }
+.head-left, .head-right{
+	width: 220px;
+}
+
+.head-left{
+	float: right;
+}
+
+.head-right{
+	float: left;
+}
+
+.head-bottom{
+	margin: 5px;
+	color: #ffe;
+	background-color: #f96;
+	width:450px;
+}
+
+.head-bottom:hover{
+	cursor: pointer;
+}
+
+.msgPart{
+	font-size: 20px;
+}
 
 
 

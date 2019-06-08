@@ -5,8 +5,9 @@ import logger from 'morgan'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import webpack from 'webpack'
-
+import socketio from 'socket.io'
 import {connection} from './DB'
+//import Board from '../client/board'
 // 引入history模块
 import history from 'connect-history-api-fallback'
 
@@ -41,6 +42,49 @@ app.use(webpackDevMiddleware(compiler, {
 app.use(webpackHotMiddleware(compiler))
 
 app.use(express.static(path.join(__dirname, 'views')))
+
+// 设置监听端口
+const SERVER_PORT = 4000
+const server = app.listen(SERVER_PORT, () => {
+  console.info(`服务已经启动，监听端口${SERVER_PORT}`)
+})
+
+// Setup socket.io
+const io = socketio(server).of('/game');
+
+var player = {};
+//const board = new Board()
+// Listen for socket.io connections
+io.on('connection',socket=>{
+	console.log('Link start!-------------------------------------');
+	socket.on('login',function(msg){
+		console.log("msg"+msg+"-----------------------------------------");
+		if(!(msg in player)){
+			socket.playerName = msg;
+			player[msg]=0;
+		}
+ 		io.emit('current',{players:player});
+	})
+	socket.on('curPoint',function(data){
+		console.log("data:"+JSON.stringify(data)+"-----------------------------------------");
+		var name = data.name;
+		var point = data.point;
+		player[name] = point;
+		io.emit('current',{players:player})
+	})
+	socket.on('sendMsg',function(data){
+		console.log("text:"+JSON.stringify(data)+"-----------------------------------------");
+		io.emit('showMsg',{message:data});
+
+	})
+	socket.on('disconnect',function(data){
+		console.log("disccccccc"+socket.playerName+"--------------")
+		delete player[socket.playerName];
+		io.emit('out',{players:player});
+	})
+	
+})
+
 app.get('/', function (req, res) {
   //res.sendFile('./views/index.html')
 //	res.redirect('/game')
@@ -99,7 +143,7 @@ app.post('/checklogin', urlencodedParser, function (req, res){
 
 app.get('/getAllRank',function(req,res){
 	var sql='SELECT point,p.name FROM record r LEFT JOIN player p ON r.player_id=p.player_id WHERE point>= \
-			(SELECT MAX(d.point) FROM record d WHERE d.player_id = r.player_id)';
+			(SELECT MAX(d.point) FROM record d WHERE d.player_id = r.player_id) ORDER BY point desc';
 	connection.query(sql,function(err,result){
 		if(err){
 		  console.log('[SELECT ERROR] - ',err.message);
@@ -187,10 +231,5 @@ app.use(function (err, req, res, next) {
   res.send(err.message)
 })
 
-// 设置监听端口
-const SERVER_PORT = 4000
-app.listen(SERVER_PORT, () => {
-  console.info(`服务已经启动，监听端口${SERVER_PORT}`)
-})
 
 export default app

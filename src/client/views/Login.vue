@@ -112,6 +112,7 @@
 					//console.log("resdata:"+JSON.stringify(response.data));
 					var data = response.data;
 					if(data.code === 0){
+						//this.$socket.emit('login',{name:this.formCustom.user});
 						this.$router.push({path:'/game'})
 						this.$Notice.open({
 							title: '欢迎 '+this.formCustom.user,
