@@ -62,8 +62,9 @@ io.on('connection',socket=>{
 		if(!(msg in player)){
 			socket.playerName = msg;
 			player[msg]=0;
+			
 		}
- 		io.emit('current',{players:player});
+		io.emit('current',{players:player});
 	})
 	socket.on('curPoint',function(data){
 		console.log("data:"+JSON.stringify(data)+"-----------------------------------------");
@@ -75,7 +76,10 @@ io.on('connection',socket=>{
 	socket.on('sendMsg',function(data){
 		console.log("text:"+JSON.stringify(data)+"-----------------------------------------");
 		io.emit('showMsg',{message:data});
-
+	})
+	socket.on('allRank',function(data){
+		console.log("rank:"+JSON.stringify(data)+"-----------------------------------------");
+		io.emit('updateRank',data);
 	})
 	socket.on('disconnect',function(data){
 		console.log("disccccccc"+socket.playerName+"--------------")
@@ -86,11 +90,7 @@ io.on('connection',socket=>{
 })
 
 app.get('/', function (req, res) {
-  //res.sendFile('./views/index.html')
-//	res.redirect('/game')
-// 	if(req.cookies.name){
-// 		res.redirect('/game')
-// 	}
+	
 })
 
 app.get('/getName',function(req,res){

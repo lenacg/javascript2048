@@ -17,13 +17,12 @@ var rotateLeft = function (matrix) {
 
 class Board{
     constructor(){
-		//this.sockets={};
 		this.players = new Player();
         this.tiles = [];
         this.cells = [];
-        this.size = 4;
+        this.size = 5;
         for (var i = 0; i < this.size; ++i) {
-            this.cells[i] = [this.addTile(), this.addTile(), this.addTile(), this.addTile()];
+            this.cells[i] = [this.addTile(), this.addTile(), this.addTile(), this.addTile(),this.addTile()];
         }
         this.addRandomTile();
         this.setPositions();
@@ -32,16 +31,6 @@ class Board{
         this.deltaX = [-1, 0, 1, 0];
         this.deltaY = [0, -1, 0, 1];
     }
-
-	addPlayer(socket,name){
-		this.sockets[socket.id] = socket;
-		this.players[socket.id] = new Player(socket.id, username);
-	}
-	
-	removePlayer(socket) {
-		delete this.sockets[socket.id];
-		delete this.players[socket.id];
-	}
 	
     addTile(){
         var res = new Tile;

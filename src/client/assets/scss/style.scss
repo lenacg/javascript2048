@@ -1,5 +1,5 @@
-@for $row from 0 through 3 {
-  @for $column from 0 through 3 {
+@for $row from 0 through 4 {
+  @for $column from 0 through 4 {
     .position_#{$row}_#{$column}:not(.isMoving) {
       top: 110px * $row + 5px;
       left: 110px * $column + 5px;
@@ -7,8 +7,8 @@
   }
 }
 
-@for $fromRow from 0 through 3 {
-  @for $toRow from 0 through 3 {
+@for $fromRow from 0 through 4 {
+  @for $toRow from 0 through 4 {
     $name: row_from_#{$fromRow}_to_#{$toRow};
 
     @if $fromRow == $toRow {
@@ -34,8 +34,8 @@
   }
 }
 
-@for $fromColumn from 0 through 3 {
-  @for $toColumn from 0 through 3 {
+@for $fromColumn from 0 through 4 {
+  @for $toColumn from 0 through 4 {
     $name: column_from_#{$fromColumn}_to_#{$toColumn};
 
     @if $fromColumn == $toColumn {

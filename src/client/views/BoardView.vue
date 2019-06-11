@@ -1,25 +1,8 @@
 <template>
 	
     <div class="content">
-		<Row type="flex" justify="center" id="board" >
-			<Col span="6" >
-				<Card style="width: 80%;margin:0 auto;">
-					<p slot="title">
-						<Icon type="md-contact" />
-						{{board.players.name}}
-					</p>
-					<a v-show="isLogin" href="http://localhost:4000/" slot="extra" @click="logout()">
-						<Icon type="ios-loop-strong"></Icon>
-						Logout
-					</a>
-					<ul style="list-style-type:none">
-						<li v-for="item in pointList">
-							<span class="mypoint">{{item.point}}</span>
-						</li>
-					</ul>
-				</Card>
-			</Col>
-			<Col span="12">
+		<Row type="flex" justify="center"  >
+			<Col :xl="12" :sm="24" :xs="24">
 				<div class="gamebody" style="text-align: center;">
 					<Row>
 						<Col span="12">
@@ -34,9 +17,9 @@
 							</span>	
 						</Col>
 					</Row>
-
+			
 					<div class="gcontent" style="text-align: center;">
-						<div class="board"  tabIndex="1" style="margin:0 auto">
+						<div class="board"  tabIndex="1" style="margin:0 auto"  id="board">
 							<div v-for="(r_item,r_index) in board.cells" :key="'1'+r_index">
 								<cell v-for="(c_item,c_index) in r_item" :key="c_index"></cell>
 							</div>
@@ -52,23 +35,8 @@
 					
 				</div>
 			</Col>
-			<Col span="6">
+			<Col :xl="6" :sm="12" :xs="12">
 				<Card style="width: 80%;margin:0 auto;">
-					<p slot="title">
-						总排行
-					</p>
-					<ul style="list-style-type:none">
-						<li v-for="item in allRank>50?allRank.slice(0,50):allRank">
-							<span class="mypoint">{{item.name}}</span>
-							<span class="mypoint" style="float: right;">{{item.point}}</span>
-						</li>
-					</ul>
-				</Card>
-			</Col>
-		</Row>
-		<Tabs value="name3">
-			<!-- <TabPane label="个人排行" name="name1">
-				<Card style="width: 270px;margin-left: 10px;">
 					<p slot="title">
 						<Icon type="md-contact" />
 						{{board.players.name}}
@@ -83,22 +51,24 @@
 						</li>
 					</ul>
 				</Card>
-				
-			</TabPane>
-			<TabPane label="总排行" name="name2">
-				<Card style="width: 270px;margin-left: 10px;">
+			</Col>
+			<Col :xl="6" :sm="12" :xs="12">
+				<Card style="width: 80%;margin:0 auto;">
 					<p slot="title">
-						总排行
+						总排行  Rank:{{myRank}}
 					</p>
 					<ul style="list-style-type:none">
-						<li v-for="item in allRank>50?allRank.slice(0,50):allRank">
-							<span class="mypoint">{{item.name}}</span>
+						<li v-for="(item,index) in allRank>50?allRank.slice(0,50):allRank">
+							<span class="mypoint">{{index+1}}  {{item.name}}</span>
 							<span class="mypoint" style="float: right;">{{item.point}}</span>
 						</li>
 					</ul>
 				</Card>
-			</TabPane> -->
-			<TabPane label="当前玩家" name="name3">
+			</Col>
+					
+		</Row>
+		<Tabs value="name3">
+			<TabPane label="在线玩家" name="name3">
 				<Row style="background:#eee;padding: 20px;border-radius: 20px;">
 					<Col span="8">
 						<div v-for="(value,key) in playerList" style="font-size: 20px;">{{key}}:{{value}}</div>
@@ -112,7 +82,7 @@
 							</ul>
 						</Card>
 						<Input placeholder="开始聊天吧..." v-model="text" id="msg" style="width: 80%"> 
-							<Button slot="append" @click="sendMsg(text)" icon="md-arrow-round-back"></Button>
+							<Button slot="append" @click="sendMsg(board.players.name,text)" icon="md-arrow-round-back"></Button>
 						</Input>
 					</Col>
 				</Row>
@@ -139,6 +109,7 @@
 			  pointList:[],
 			  myBest:0,
 			  allRank:[],
+			  myRank:0,
               board:new Board()
           }
         },
@@ -192,11 +163,10 @@
 			}.bind(this),false)
 			
             window.addEventListener('keydown', this.handleKeyDown.bind(this));
-			this.getName();
-			if(this.isLogin){
-				this.getAllRank();
-			}
-			this.sendMsg("");
+			
+			this.init();
+			
+			//this.sendMsg("");
 			
         },
         beforeDestroy(){
@@ -213,23 +183,12 @@
         methods:{
 			enterToSend(event){
 				if(event.keyCode === 13&&this.text.trim().length!==0){
-					this.sendMsg(this.text);
+					this.sendMsg(this.board.players.name,this.text);
 				}
 			},
-			sendMsg(text){
+			sendMsg(name,text){
 				//this.$socket.removeAllListeners();
-				this.$socket.emit('sendMsg',{name:this.board.players.name,msg:text});
-// 				this.$socket.on('showMsg',function(data){
-// 					if(data.message.msg!==''){
-// 						console.log("msg:"+JSON.stringify(data)+"---------------------");
-// 						var message = data.message;
-// 						var date = new Date();
-// 						var strDate = this.formatDate(date);
-// 						message.time = strDate;
-// 						this.msgList.push(message);
-// 						console.log(this.msgList);
-// 					}
-// 				}.bind(this))
+				this.$socket.emit('sendMsg',{name:name,msg:text});
 				
 				this.text = '';
 			},
@@ -259,9 +218,9 @@
             },
             onRestart(){
                 this.board = new Board()
-				this.getName();
+				this.init();
             },
-			getName(){
+			init(){
 				this.$axios.get('/getName').then((response)=>{
 					var data = response.data;
 					if(data.name === ''){
@@ -270,7 +229,8 @@
 						return;
 					}
 					this.board.players.name = data.name;
-					this.$socket.emit('login',data.name);
+					this.sendMsg(data.name,"");
+					this.$socket.emit('login',this.board.players.name);
 					this.$socket.removeAllListeners();
 					this.$socket.on('current',function(data){
 						console.log("data:"+JSON.stringify(data)+"---------------------");
@@ -295,8 +255,10 @@
 							this.msgList.push(message);
 							console.log(this.msgList);
 						}
-					}.bind(this))
-					//this.sendMsg("上线了");
+					}.bind(this));
+					if(this.isLogin){
+						this.getAllRank();
+					}
 				})
 			},
 			getPlayerList(data){
@@ -314,7 +276,20 @@
 					var data = response.data;
 					console.log(data)
 					this.allRank = data;
+					this.getMyRank();
+					this.$socket.emit('allRank',this.allRank);
+					this.$socket.on('updateRank',function(data){
+						this.allRank = data;
+					}.bind(this))
 				})
+			},
+			getMyRank(){
+				for(var i =0;i<this.allRank.length;i++){
+					if(this.allRank[i].name === this.board.players.name){
+						this.myRank = i+1;
+						return;
+					}
+				}
 			},
 			getPointList(name){
 				//console.log("name"+name);
