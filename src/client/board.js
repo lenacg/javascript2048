@@ -1,5 +1,6 @@
 import Tile from './tile'
 import Player from './player'
+const R = require('ramda');
 
 var rotateLeft = function (matrix) {
     var rows = matrix.length;
@@ -14,7 +15,15 @@ var rotateLeft = function (matrix) {
     return res;
 };
 
+// 00 01 02 03
+// 10 11 12 13
+// 20 21 22 23
+// 30 31 32 33
 
+//03 13 23 33
+//02 12 22 32
+//01 11 21 31
+//00 10 20 30
 class Board{
     constructor(){
 		this.players = new Player();
@@ -35,14 +44,14 @@ class Board{
     addTile(){
         var res = new Tile;
         Tile.apply(res, arguments);
-        this.tiles.push(res);
+		this.tiles = R.append(res)(this.tiles);
         return res;
     }
 
     moveLeft(){
         var hasChanged = false;
         for (var row = 0; row < this.size; ++row) {
-            var currentRow = this.cells[row].filter(tile => tile.value != 0);
+			var currentRow = R.filter(tile => tile.value!==0)(this.cells[row]);
             var resultRow = [];
             for (var target = 0; target < this.size; ++target) {
                 var targetTile = currentRow.length ? currentRow.shift() : this.addTile();
@@ -56,8 +65,10 @@ class Board{
 					this.players.addPoint(targetTile.value);
                 }
                 resultRow[target] = targetTile;
-                this.won |= (targetTile.value == 2048);
-                hasChanged |= (targetTile.value != this.cells[row][target].value);
+				this.won = R.or(this.won,targetTile.value == 2048);
+				hasChanged = R.or(hasChanged,targetTile.value != this.cells[row][target].value);
+//                 this.won |= (targetTile.value == 2048);
+//                 hasChanged |= (targetTile.value != this.cells[row][target].value);
             }
             this.cells[row] = resultRow;
         }
@@ -80,7 +91,7 @@ class Board{
         var emptyCells = [];
         for (var r = 0; r < this.size; ++r) {
             for (var c = 0; c < this.size; ++c) {
-                if (this.cells[r][c].value == 0) {
+                if (this.cells[r][c].value === 0) {
                     emptyCells.push({r: r, c: c});
                 }
             }
@@ -109,8 +120,8 @@ class Board{
     }
 
     clearOldTiles(){
-        this.tiles = this.tiles.filter(tile => tile.markForDeletion == false);
-        this.tiles.forEach(tile => { tile.markForDeletion = true; });
+		this.tiles = R.filter(tile => tile.markForDeletion == false)(this.tiles);
+		R.forEach(tile => { tile.markForDeletion = true; })(this.tiles);
     }
 
     hasWon(){

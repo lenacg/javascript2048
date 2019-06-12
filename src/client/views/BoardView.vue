@@ -127,8 +127,7 @@
 				startX = event.changedTouches[0].pageX;
 				startY = event.changedTouches[0].pageY;
 // 				startX = event.pageX;
-// 				startY = event.pageY;
-
+// 				startY = event.pageY;		
 			}.bind(this),false)
 
 			game.addEventListener("touchend",function(event){
@@ -161,13 +160,8 @@
 					}
 				}
 			}.bind(this),false)
-			
             window.addEventListener('keydown', this.handleKeyDown.bind(this));
-			
 			this.init();
-			
-			//this.sendMsg("");
-			
         },
         beforeDestroy(){
 			//clearInterval(this.timer);
@@ -189,7 +183,6 @@
 			sendMsg(name,text){
 				//this.$socket.removeAllListeners();
 				this.$socket.emit('sendMsg',{name:name,msg:text});
-				
 				this.text = '';
 			},
 			formatDate(date){
@@ -293,22 +286,34 @@
 			},
 			getPointList(name){
 				//console.log("name"+name);
-				this.$axios.post('/getPointList',{name:name}).then((response)=>{
-					var data = response.data;
-					this.pointList = data;
-					this.myBest = data[0].point;
-				})
+				if(localStorage.getItem(this.board.players.name)){
+					this.pointList = JSON.parse(localStorage.getItem(this.board.players.name));
+					this.myBest = this.pointList[0].point;
+					//console.log("has");
+				}else{
+					this.$axios.post('/getPointList',{name:name}).then((response)=>{
+						var data = response.data;
+						this.pointList = data;
+						this.myBest = data[0].point;
+						localStorage.setItem(this.board.players.name,JSON.stringify(this.pointList));
+					})
+				}
 			},
 			upPoint(){
 				if(!this.isLogin)
 					return;
+				this.pointList.push({point:this.board.players.point});
+				this.pointList.sort(function(a,b){
+					return b.point-a.point;
+				})
+				localStorage.setItem(this.board.players.name,JSON.stringify(this.pointList));
+				
 				this.$axios.post('/upPoint',{name:this.board.players.name,point:this.board.players.point}).then((response)=>{
 					var data = response.data;
-					//this.pointList = data;
-					this.pointList.push({point:data.point});
-					this.pointList.sort(function(a,b){
-						return b.point-a.point;
-					})
+// 					this.pointList.push({point:data.point});
+// 					this.pointList.sort(function(a,b){
+// 						return b.point-a.point;
+// 					})
 					
 					this.board.players.point = 0;
 					this.myBest = this.pointList[0].point;
